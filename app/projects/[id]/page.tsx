@@ -200,6 +200,13 @@ function Row({
   );
 }
 
+function getEffectivePdfUrl(pdfUrl: string): string {
+  if (pdfUrl.includes(".private.blob.vercel-storage.com")) {
+    return `/api/blob-url?url=${encodeURIComponent(pdfUrl)}`;
+  }
+  return pdfUrl;
+}
+
 function ReportViewer({
   pdfUrl,
   externalReportUrl,
@@ -208,16 +215,17 @@ function ReportViewer({
   externalReportUrl?: string;
 }) {
   if (pdfUrl) {
+    const effectiveUrl = getEffectivePdfUrl(pdfUrl);
     return (
       <div className="bg-white border border-border rounded-lg overflow-hidden shadow-sm">
         <iframe
-          src={pdfUrl}
+          src={effectiveUrl}
           className="w-full h-[600px] border-0"
           title="PDF звіт"
         />
         <div className="p-3 border-t border-border bg-surface">
           <a
-            href={pdfUrl}
+            href={effectiveUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-brand-navy hover:underline inline-flex items-center gap-1"

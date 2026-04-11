@@ -38,7 +38,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
-          <RatingBadge rating={project.rating} size="sm" />
+          <RatingBadge rating={project.rating} size="sm" showLabel />
           <Link href={`/projects/${project.id}`}>
             <Button size="sm" variant="default">
               Переглянути

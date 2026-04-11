@@ -36,15 +36,15 @@ export async function POST(req: NextRequest) {
 
     const filename = `reports/${crypto.randomUUID()}-${file.name}`;
     const blob = await put(filename, file, {
-      access: "public",
+      access: "private",
       contentType: "application/pdf",
     });
 
     return NextResponse.json({ url: blob.url });
-  } catch {
-    return NextResponse.json(
-      { error: "Не вдалося завантажити файл" },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error("[upload] error:", err);
+    const message =
+      err instanceof Error ? err.message : "Не вдалося завантажити файл";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -13,7 +13,7 @@ export function Header({ showLoginButton = true }: HeaderProps) {
         <div className="flex items-start justify-between gap-4">
           <Link href="/" className="flex-1 group">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-full bg-brand-gold flex items-center justify-center text-brand-navy font-bold text-xl shrink-0">
+              <div className="h-12 w-12 rounded-full bg-brand-gold flex items-center justify-center text-brand-navy font-bold text-[11px] leading-none tracking-tight shrink-0">
                 ДТЕУ
               </div>
               <div>
