@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { get } from "@vercel/blob";
+import { head } from "@vercel/blob";
 
 export async function GET(req: NextRequest) {
   const blobUrl = req.nextUrl.searchParams.get("url");
@@ -9,8 +9,22 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const { stream, blob } = await get(blobUrl, { access: "private" });
-    return new Response(stream, {
+    const blob = await head(blobUrl);
+
+    const fileRes = await fetch(blobUrl, {
+      headers: {
+        Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
+      },
+    });
+
+    if (!fileRes.ok) {
+      return NextResponse.json(
+        { error: "Не вдалося отримати файл" },
+        { status: fileRes.status }
+      );
+    }
+
+    return new Response(fileRes.body, {
       headers: {
         "Content-Type": blob.contentType || "application/pdf",
         "Cache-Control": "private, max-age=3600",
