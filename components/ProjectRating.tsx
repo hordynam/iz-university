@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { RATINGS } from "@/lib/rating";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,7 @@ export function ProjectRating({
   const [userVote, setUserVote] = useState<number | null>(null);
   const [hovering, setHovering] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const stored = localStorage.getItem(`voted:${projectId}`);
@@ -49,6 +51,7 @@ export function ProjectRating({
         setCount(data.count);
         setUserVote(value);
         localStorage.setItem(`voted:${projectId}`, String(value));
+        router.refresh();
       }
     } finally {
       setLoading(false);
@@ -56,7 +59,8 @@ export function ProjectRating({
   }
 
   const average = count > 0 ? sum / count : null;
-  const displayValue = hovering ?? (average !== null ? Math.max(1, Math.min(5, Math.round(average))) : null);
+  // fall back to the user's own vote when server data is still 0
+  const displayValue = hovering ?? (average !== null ? Math.max(1, Math.min(5, Math.round(average))) : userVote);
   const displayRating = displayValue ? RATINGS[displayValue - 1] : null;
 
   return (

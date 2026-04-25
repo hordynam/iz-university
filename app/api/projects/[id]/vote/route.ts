@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { addVote } from "@/lib/kv";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,9 @@ export async function POST(req: NextRequest, { params }: Ctx) {
         { status: 404 }
       );
     }
+
+    revalidatePath(`/projects/${params.id}`);
+    revalidatePath("/");
 
     return NextResponse.json({
       sum: project.ratingSum,
