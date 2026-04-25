@@ -1,7 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createProject, getAllProjects } from "@/lib/kv";
 import { projectInputSchema } from "@/lib/types";
 import { isAuthenticated } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -35,6 +38,7 @@ export async function POST(req: NextRequest) {
       pdfUrl: parsed.data.pdfUrl || undefined,
       externalReportUrl: parsed.data.externalReportUrl || undefined,
     });
+    revalidatePath("/");
     return NextResponse.json(project, { status: 201 });
   } catch {
     return NextResponse.json(

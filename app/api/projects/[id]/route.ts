@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { del } from "@vercel/blob";
 import {
   deleteProject,
@@ -7,6 +8,8 @@ import {
 } from "@/lib/kv";
 import { projectInputSchema } from "@/lib/types";
 import { isAuthenticated } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 interface Ctx {
   params: { id: string };
@@ -58,6 +61,8 @@ export async function PUT(req: NextRequest, { params }: Ctx) {
       );
     }
 
+    revalidatePath("/");
+    revalidatePath(`/projects/${params.id}`);
     return NextResponse.json(updated);
   } catch {
     return NextResponse.json(
@@ -89,6 +94,8 @@ export async function DELETE(_req: NextRequest, { params }: Ctx) {
       }
     }
 
+    revalidatePath("/");
+    revalidatePath(`/projects/${params.id}`);
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json(

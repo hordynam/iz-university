@@ -17,7 +17,6 @@ export interface FilterState {
   educationLevel: string;
   year: string;
   academicYear: string;
-  rating: string;
   search: string;
 }
 
@@ -26,7 +25,6 @@ export const EMPTY_FILTERS: FilterState = {
   educationLevel: "all",
   year: "all",
   academicYear: "all",
-  rating: "all",
   search: "",
 };
 
@@ -69,7 +67,6 @@ export function FilterBar({
     filters.educationLevel !== "all" ||
     filters.year !== "all" ||
     filters.academicYear !== "all" ||
-    filters.rating !== "all" ||
     filters.search !== "";
 
   return (
@@ -84,7 +81,7 @@ export function FilterBar({
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <Select
           value={filters.faculty}
           onValueChange={(v) => update("faculty", v)}
@@ -148,22 +145,6 @@ export function FilterBar({
           </SelectContent>
         </Select>
 
-        <Select
-          value={filters.rating}
-          onValueChange={(v) => update("rating", v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Рейтинг" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Будь-який рейтинг</SelectItem>
-            <SelectItem value="5">😁 Відмінно</SelectItem>
-            <SelectItem value="4">😊 Дуже добре</SelectItem>
-            <SelectItem value="3">🙂 Добре</SelectItem>
-            <SelectItem value="2">😐 Задовільно</SelectItem>
-            <SelectItem value="1">😞 Незадовільно</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       {hasActive && (

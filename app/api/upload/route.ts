@@ -2,7 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { put } from "@vercel/blob";
 import { isAuthenticated } from "@/lib/auth";
 
-const MAX_SIZE = 10 * 1024 * 1024;
+const MAX_SIZE = 30 * 1024 * 1024;
+
+export const config = {
+  api: {
+    bodySizeLimit: "30mb",
+  },
+};
 
 export async function POST(req: NextRequest) {
   if (!isAuthenticated()) {
@@ -29,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     if (file.size > MAX_SIZE) {
       return NextResponse.json(
-        { error: "Розмір файлу не має перевищувати 10 МБ" },
+        { error: "Розмір файлу не має перевищувати 30 МБ" },
         { status: 400 }
       );
     }

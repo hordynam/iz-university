@@ -30,7 +30,8 @@ export interface Project {
 
   analogCompanies: AnalogCompany[];
 
-  rating: Rating;
+  ratingSum: number;
+  ratingCount: number;
 }
 
 export const analogCompanySchema = z.object({
@@ -53,13 +54,6 @@ export const projectInputSchema = z
     pdfUrl: z.string().url().optional().or(z.literal("")),
     externalReportUrl: z.string().url().optional().or(z.literal("")),
     analogCompanies: z.array(analogCompanySchema),
-    rating: z.union([
-      z.literal(1),
-      z.literal(2),
-      z.literal(3),
-      z.literal(4),
-      z.literal(5),
-    ]),
   })
   .refine(
     (data) =>

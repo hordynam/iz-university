@@ -41,8 +41,6 @@ export function CatalogView({ projects }: CatalogViewProps) {
         p.academicYear !== filters.academicYear
       )
         return false;
-      if (filters.rating !== "all" && String(p.rating) !== filters.rating)
-        return false;
       if (filters.search) {
         const q = filters.search.toLowerCase();
         const hay =

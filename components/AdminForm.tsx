@@ -13,13 +13,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2, CheckCircle2, Loader2 } from "lucide-react";
-import { RATINGS } from "@/lib/rating";
 import {
   projectInputSchema,
   type ProjectInput,
   type Project,
   type EducationLevel,
-  type Rating,
   type AnalogCompany,
 } from "@/lib/types";
 
@@ -42,7 +40,6 @@ const emptyForm: ProjectInput = {
   pdfUrl: "",
   externalReportUrl: "",
   analogCompanies: [],
-  rating: 3,
 };
 
 function toFormState(p: Project): ProjectInput {
@@ -60,7 +57,6 @@ function toFormState(p: Project): ProjectInput {
     pdfUrl: p.pdfUrl ?? "",
     externalReportUrl: p.externalReportUrl ?? "",
     analogCompanies: p.analogCompanies,
-    rating: p.rating,
   };
 }
 
@@ -117,8 +113,8 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
       setError("Файл має бути у форматі PDF");
       return;
     }
-    if (file.size > 10 * 1024 * 1024) {
-      setError("Розмір файлу не має перевищувати 10 МБ");
+    if (file.size > 30 * 1024 * 1024) {
+      setError("Розмір файлу не має перевищувати 30 МБ");
       return;
     }
 
@@ -323,7 +319,7 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
         </h3>
 
         <div className="space-y-1.5">
-          <Label htmlFor="pdfFile">Завантажити PDF (макс. 10 МБ)</Label>
+          <Label htmlFor="pdfFile">Завантажити PDF (макс. 30 МБ)</Label>
           <div className="flex items-center gap-3">
             <Input
               id="pdfFile"
@@ -356,27 +352,6 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
             onChange={(e) => update("externalReportUrl", e.target.value)}
           />
         </div>
-      </section>
-
-      <section className="space-y-4">
-        <h3 className="font-semibold text-brand-navy border-b border-border pb-2">
-          Рейтинг
-        </h3>
-        <Select
-          value={String(form.rating)}
-          onValueChange={(v) => update("rating", Number(v) as Rating)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {RATINGS.map((r) => (
-              <SelectItem key={r.value} value={String(r.value)}>
-                {r.emoji} {r.label} ({r.value})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </section>
 
       <section className="space-y-4">

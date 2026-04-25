@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { RatingBadge } from "@/components/RatingBadge";
+import { ProjectRating } from "@/components/ProjectRating";
 import {
   ArrowLeft,
   ExternalLink,
@@ -15,7 +15,6 @@ import {
   Users,
 } from "lucide-react";
 import { getProjectById } from "@/lib/kv";
-import { getRatingDisplay, renderRatingCircles } from "@/lib/rating";
 
 export const dynamic = "force-dynamic";
 
@@ -44,8 +43,6 @@ export default async function ProjectPage({ params }: PageProps) {
   if (!project) {
     notFound();
   }
-
-  const rating = getRatingDisplay(project.rating);
 
   return (
     <>
@@ -117,22 +114,11 @@ export default async function ProjectPage({ params }: PageProps) {
               <h2 className="text-lg font-semibold text-brand-navy mb-4">
                 Рейтинг проєкту
               </h2>
-              <div className="flex items-center gap-5">
-                <span className="text-5xl" aria-hidden>
-                  {rating.emoji}
-                </span>
-                <div>
-                  <p className="text-xl font-bold text-foreground">
-                    {rating.label}
-                  </p>
-                  <p
-                    className="font-mono tracking-widest text-brand-gold text-2xl mt-1"
-                    aria-label={`${project.rating} з 5`}
-                  >
-                    {renderRatingCircles(project.rating)}
-                  </p>
-                </div>
-              </div>
+              <ProjectRating
+                projectId={project.id}
+                initialSum={project.ratingSum ?? 0}
+                initialCount={project.ratingCount ?? 0}
+              />
             </section>
 
             <section className="bg-white border border-border rounded-lg p-6 shadow-sm">

@@ -30,7 +30,7 @@ export async function getProjectById(id: string): Promise<Project | null> {
 }
 
 export async function createProject(
-  data: Omit<Project, "id" | "createdAt" | "updatedAt">
+  data: Omit<Project, "id" | "createdAt" | "updatedAt" | "ratingSum" | "ratingCount">
 ): Promise<Project> {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -39,6 +39,8 @@ export async function createProject(
     id,
     createdAt: now,
     updatedAt: now,
+    ratingSum: 0,
+    ratingCount: 0,
   };
 
   await kv.set(projectKey(id), project);
@@ -52,7 +54,7 @@ export async function createProject(
 
 export async function updateProject(
   id: string,
-  data: Omit<Project, "id" | "createdAt" | "updatedAt">
+  data: Omit<Project, "id" | "createdAt" | "updatedAt" | "ratingSum" | "ratingCount">
 ): Promise<Project | null> {
   const existing = await getProjectById(id);
   if (!existing) return null;
@@ -61,6 +63,23 @@ export async function updateProject(
     ...data,
     id,
     createdAt: existing.createdAt,
+    updatedAt: new Date().toISOString(),
+    ratingSum: existing.ratingSum ?? 0,
+    ratingCount: existing.ratingCount ?? 0,
+  };
+
+  await kv.set(projectKey(id), updated);
+  return updated;
+}
+
+export async function addVote(id: string, value: number): Promise<Project | null> {
+  const project = await getProjectById(id);
+  if (!project) return null;
+
+  const updated: Project = {
+    ...project,
+    ratingSum: (project.ratingSum ?? 0) + value,
+    ratingCount: (project.ratingCount ?? 0) + 1,
     updatedAt: new Date().toISOString(),
   };
 

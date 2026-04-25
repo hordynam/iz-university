@@ -2,12 +2,28 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RatingBadge } from "@/components/RatingBadge";
+import { RATINGS } from "@/lib/rating";
 import { ArrowRight, Building2 } from "lucide-react";
 import type { Project } from "@/lib/types";
 
 interface ProjectCardProps {
   project: Project;
+}
+
+function VotePreview({ sum, count }: { sum: number; count: number }) {
+  if (count === 0) {
+    return <span className="text-xs text-muted-foreground">Немає оцінок</span>;
+  }
+  const avg = sum / count;
+  const rounded = Math.max(1, Math.min(5, Math.round(avg)));
+  const rating = RATINGS[rounded - 1];
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-xl">{rating.emoji}</span>
+      <span className="text-sm font-medium">{avg.toFixed(1)}</span>
+      <span className="text-xs text-muted-foreground">({count})</span>
+    </div>
+  );
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
@@ -38,7 +54,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
-          <RatingBadge rating={project.rating} size="sm" showLabel />
+          <VotePreview sum={project.ratingSum ?? 0} count={project.ratingCount ?? 0} />
           <Link href={`/projects/${project.id}`}>
             <Button size="sm" variant="default">
               Переглянути

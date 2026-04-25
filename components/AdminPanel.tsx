@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AdminForm } from "./AdminForm";
-import { RatingBadge } from "./RatingBadge";
 import {
   Plus,
   Pencil,
@@ -72,6 +71,7 @@ export function AdminPanel() {
       if (!res.ok) throw new Error("Не вдалося видалити проєкт");
       setDeleting(null);
       await load();
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Помилка");
     } finally {
@@ -152,7 +152,16 @@ export function AdminPanel() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <RatingBadge rating={p.rating} size="sm" />
+                    {(p.ratingCount ?? 0) > 0 ? (
+                      <span className="text-sm font-medium">
+                        {((p.ratingSum ?? 0) / p.ratingCount!).toFixed(1)}/5
+                        <span className="text-xs text-muted-foreground ml-1">
+                          ({p.ratingCount})
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex gap-1">
@@ -190,6 +199,7 @@ export function AdminPanel() {
             onSubmitted={() => {
               setCreateOpen(false);
               void load();
+              router.refresh();
             }}
           />
         </DialogContent>
@@ -209,6 +219,7 @@ export function AdminPanel() {
               onSubmitted={() => {
                 setEditing(null);
                 void load();
+                router.refresh();
               }}
             />
           )}
