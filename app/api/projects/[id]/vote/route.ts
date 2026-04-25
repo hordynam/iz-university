@@ -19,8 +19,8 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       );
     }
 
-    const project = await addVote(params.id, value);
-    if (!project) {
+    const votes = await addVote(params.id, value);
+    if (!votes) {
       return NextResponse.json(
         { error: "Проєкт не знайдено" },
         { status: 404 }
@@ -30,10 +30,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     revalidatePath(`/projects/${params.id}`);
     revalidatePath("/");
 
-    return NextResponse.json({
-      sum: project.ratingSum,
-      count: project.ratingCount,
-    });
+    return NextResponse.json(votes);
   } catch {
     return NextResponse.json(
       { error: "Помилка при голосуванні" },

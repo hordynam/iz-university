@@ -1,15 +1,19 @@
 import { kv } from "@vercel/kv";
+import { unstable_noStore as noStore } from "next/cache";
 import type { Project } from "./types";
 
 const INDEX_KEY = "projects:index";
 const projectKey = (id: string) => `project:${id}`;
+const votesKey = (id: string) => `votes:${id}`;
 
 export async function getAllProjectIds(): Promise<string[]> {
+  noStore();
   const ids = await kv.get<string[]>(INDEX_KEY);
   return ids ?? [];
 }
 
 export async function getAllProjects(): Promise<Project[]> {
+  noStore();
   const ids = await getAllProjectIds();
   if (ids.length === 0) return [];
 
@@ -25,6 +29,7 @@ export async function getAllProjects(): Promise<Project[]> {
 }
 
 export async function getProjectById(id: string): Promise<Project | null> {
+  noStore();
   const project = await kv.get<Project>(projectKey(id));
   return project ?? null;
 }
@@ -72,19 +77,41 @@ export async function updateProject(
   return updated;
 }
 
-export async function addVote(id: string, value: number): Promise<Project | null> {
-  const project = await getProjectById(id);
-  if (!project) return null;
-
-  const updated: Project = {
-    ...project,
-    ratingSum: (project.ratingSum ?? 0) + value,
-    ratingCount: (project.ratingCount ?? 0) + 1,
-    updatedAt: new Date().toISOString(),
+export async function getVotes(id: string): Promise<{ sum: number; count: number }> {
+  noStore();
+  const raw = await kv.hgetall<{ sum: string; count: string }>(votesKey(id));
+  return {
+    sum: Number(raw?.sum ?? 0),
+    count: Number(raw?.count ?? 0),
   };
+}
 
-  await kv.set(projectKey(id), updated);
-  return updated;
+export async function addVote(
+  id: string,
+  value: number
+): Promise<{ sum: number; count: number } | null> {
+  const exists = await getProjectById(id);
+  if (!exists) return null;
+
+  // Atomic increments — no read-modify-write race condition
+  const [sum, count] = await Promise.all([
+    kv.hincrby(votesKey(id), "sum", value),
+    kv.hincrby(votesKey(id), "count", 1),
+  ]);
+
+  // Best-effort: cache the totals in the project object for card display
+  try {
+    await kv.set(projectKey(id), {
+      ...exists,
+      ratingSum: sum,
+      ratingCount: count,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch {
+    // Card will show stale data until next successful update — acceptable
+  }
+
+  return { sum, count };
 }
 
 export async function deleteProject(id: string): Promise<Project | null> {

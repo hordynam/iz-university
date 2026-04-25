@@ -21,6 +21,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AdminForm } from "./AdminForm";
 import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "./ui/sheet";
+import {
   Plus,
   Pencil,
   Trash2,
@@ -190,11 +196,11 @@ export function AdminPanel() {
         )}
       </div>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Додати новий проєкт</DialogTitle>
-          </DialogHeader>
+      <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Додати новий проєкт</SheetTitle>
+          </SheetHeader>
           <AdminForm
             onSubmitted={() => {
               setCreateOpen(false);
@@ -202,17 +208,17 @@ export function AdminPanel() {
               router.refresh();
             }}
           />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
-      <Dialog
+      <Sheet
         open={editing !== null}
         onOpenChange={(open) => !open && setEditing(null)}
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Редагування проєкту</DialogTitle>
-          </DialogHeader>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Редагування проєкту</SheetTitle>
+          </SheetHeader>
           {editing && (
             <AdminForm
               initial={editing}
@@ -223,8 +229,8 @@ export function AdminPanel() {
               }}
             />
           )}
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       <Dialog
         open={deleting !== null}

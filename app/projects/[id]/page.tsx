@@ -14,7 +14,7 @@ import {
   GraduationCap,
   Users,
 } from "lucide-react";
-import { getProjectById } from "@/lib/kv";
+import { getProjectById, getVotes } from "@/lib/kv";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +43,8 @@ export default async function ProjectPage({ params }: PageProps) {
   if (!project) {
     notFound();
   }
+
+  const votes = await getVotes(project.id);
 
   return (
     <>
@@ -116,8 +118,8 @@ export default async function ProjectPage({ params }: PageProps) {
               </h2>
               <ProjectRating
                 projectId={project.id}
-                initialSum={project.ratingSum ?? 0}
-                initialCount={project.ratingCount ?? 0}
+                initialSum={votes.sum}
+                initialCount={votes.count}
               />
             </section>
 
