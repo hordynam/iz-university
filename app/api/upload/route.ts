@@ -4,11 +4,7 @@ import { isAuthenticated } from "@/lib/auth";
 
 const MAX_SIZE = 30 * 1024 * 1024;
 
-export const config = {
-  api: {
-    bodySizeLimit: "30mb",
-  },
-};
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   if (!isAuthenticated()) {
