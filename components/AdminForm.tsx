@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent, ChangeEvent } from "react";
+import { upload } from "@vercel/blob/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -123,15 +124,16 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
     setUploadSuccess(false);
 
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Помилка завантаження файлу");
-      }
-      const { url } = (await res.json()) as { url: string };
-      update("pdfUrl", url);
+      const blob = await upload(
+        `reports/${crypto.randomUUID()}-${file.name}`,
+        file,
+        {
+          access: "private",
+          handleUploadUrl: "/api/upload",
+          contentType: "application/pdf",
+        }
+      );
+      update("pdfUrl", blob.url);
       setUploadSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Помилка завантаження");

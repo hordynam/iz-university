@@ -1,8 +1,6 @@
+import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse, type NextRequest } from "next/server";
-import { put } from "@vercel/blob";
 import { isAuthenticated } from "@/lib/auth";
-
-const MAX_SIZE = 30 * 1024 * 1024;
 
 export const maxDuration = 60;
 
@@ -11,42 +9,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Не авторизовано" }, { status: 401 });
   }
 
+  const body = (await req.json()) as HandleUploadBody;
+
   try {
-    const form = await req.formData();
-    const file = form.get("file");
-
-    if (!(file instanceof File)) {
-      return NextResponse.json(
-        { error: "Файл не надано" },
-        { status: 400 }
-      );
-    }
-
-    if (file.type !== "application/pdf") {
-      return NextResponse.json(
-        { error: "Файл має бути у форматі PDF" },
-        { status: 400 }
-      );
-    }
-
-    if (file.size > MAX_SIZE) {
-      return NextResponse.json(
-        { error: "Розмір файлу не має перевищувати 30 МБ" },
-        { status: 400 }
-      );
-    }
-
-    const filename = `reports/${crypto.randomUUID()}-${file.name}`;
-    const blob = await put(filename, file, {
-      access: "private",
-      contentType: "application/pdf",
+    const jsonResponse = await handleUpload({
+      body,
+      request: req,
+      onBeforeGenerateToken: async (pathname) => {
+        return {
+          allowedContentTypes: ["application/pdf"],
+          maximumSizeInBytes: 30 * 1024 * 1024,
+          tokenPayload: pathname,
+        };
+      },
+      onUploadCompleted: async () => {},
     });
-
-    return NextResponse.json({ url: blob.url });
+    return NextResponse.json(jsonResponse);
   } catch (err) {
-    console.error("[upload] error:", err);
     const message =
       err instanceof Error ? err.message : "Не вдалося завантажити файл";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
