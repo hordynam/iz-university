@@ -10,6 +10,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -45,7 +46,7 @@ const emptyForm: ProjectInput = {
   group: "",
   academicYear: "",
   companyName: "",
-  projectTitle: "поза темою кваліфікаційної роботи",
+  projectTitle: "Поза темою кваліфікаційної роботи",
   description: "",
   pdfUrl: "",
   externalReportUrl: "",
@@ -68,6 +69,98 @@ function toFormState(p: Project): ProjectInput {
     externalReportUrl: p.externalReportUrl ?? "",
     analogCompanies: p.analogCompanies,
   };
+}
+
+function ComboField({
+  id,
+  label,
+  value,
+  onChange,
+  options,
+  required,
+  placeholder,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  required?: boolean;
+  placeholder?: string;
+}) {
+  const isCustom = value !== "" && !options.includes(value);
+  const [mode, setMode] = useState<"select" | "custom">(
+    isCustom ? "custom" : "select"
+  );
+
+  const switchToCustom = () => {
+    setMode("custom");
+    onChange("");
+  };
+
+  const switchToSelect = () => {
+    setMode("select");
+    onChange("");
+  };
+
+  if (options.length === 0 || mode === "custom") {
+    return (
+      <div className="space-y-1.5">
+        <Label htmlFor={id}>{label}</Label>
+        <div className="flex gap-2">
+          <Input
+            id={id}
+            autoFocus={mode === "custom"}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder ?? "Введіть значення"}
+            required={required}
+            className="flex-1"
+          />
+          {options.length > 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0 text-xs"
+              onClick={switchToSelect}
+            >
+              Зі списку
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <Label>{label}</Label>
+      <Select
+        value={value}
+        onValueChange={(v) => {
+          if (v === "__custom__") {
+            switchToCustom();
+          } else {
+            onChange(v);
+          }
+        }}
+      >
+        <SelectTrigger id={id}>
+          <SelectValue placeholder={placeholder ?? "Оберіть або введіть..."} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((opt) => (
+            <SelectItem key={opt} value={opt}>
+              {opt}
+            </SelectItem>
+          ))}
+          <SelectSeparator />
+          <SelectItem value="__custom__">Ввести своє...</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  );
 }
 
 export function AdminForm({ initial, suggestions, onSubmitted }: AdminFormProps) {
@@ -259,23 +352,14 @@ export function AdminForm({ initial, suggestions, onSubmitted }: AdminFormProps)
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="educationalProgram">
-              Освітньо-професійна програма *
-            </Label>
-            <Input
-              id="educationalProgram"
-              list="opp-list"
-              value={form.educationalProgram}
-              onChange={(e) => update("educationalProgram", e.target.value)}
-              required
-            />
-            <datalist id="opp-list">
-              {(suggestions?.educationalPrograms ?? []).map((v) => (
-                <option key={v} value={v} />
-              ))}
-            </datalist>
-          </div>
+          <ComboField
+            id="educationalProgram"
+            label="Освітньо-професійна програма *"
+            value={form.educationalProgram}
+            onChange={(v) => update("educationalProgram", v)}
+            options={suggestions?.educationalPrograms ?? []}
+            required
+          />
 
           <div className="space-y-1.5">
             <Label>Рівень освіти *</Label>
@@ -296,21 +380,14 @@ export function AdminForm({ initial, suggestions, onSubmitted }: AdminFormProps)
             </Select>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="faculty">Факультет *</Label>
-            <Input
-              id="faculty"
-              list="faculty-list"
-              value={form.faculty}
-              onChange={(e) => update("faculty", e.target.value)}
-              required
-            />
-            <datalist id="faculty-list">
-              {(suggestions?.faculties ?? []).map((v) => (
-                <option key={v} value={v} />
-              ))}
-            </datalist>
-          </div>
+          <ComboField
+            id="faculty"
+            label="Факультет *"
+            value={form.faculty}
+            onChange={(v) => update("faculty", v)}
+            options={suggestions?.faculties ?? []}
+            required
+          />
 
           <div className="space-y-1.5">
             <Label>Курс *</Label>
@@ -341,22 +418,15 @@ export function AdminForm({ initial, suggestions, onSubmitted }: AdminFormProps)
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="academicYear">Навчальний рік *</Label>
-            <Input
-              id="academicYear"
-              list="year-list"
-              placeholder="2024–2025"
-              value={form.academicYear}
-              onChange={(e) => update("academicYear", e.target.value)}
-              required
-            />
-            <datalist id="year-list">
-              {(suggestions?.academicYears ?? []).map((v) => (
-                <option key={v} value={v} />
-              ))}
-            </datalist>
-          </div>
+          <ComboField
+            id="academicYear"
+            label="Навчальний рік *"
+            value={form.academicYear}
+            onChange={(v) => update("academicYear", v)}
+            options={suggestions?.academicYears ?? []}
+            placeholder="2024–2025"
+            required
+          />
         </div>
       </section>
 
