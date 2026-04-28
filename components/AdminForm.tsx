@@ -175,8 +175,8 @@ export function AdminForm({ initial, suggestions, onSubmitted }: AdminFormProps)
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Track whether the draft has been restored yet (to avoid saving empty form over it)
-  const draftRestored = useRef(false);
+  // Skip saving on the very first effect run to avoid overwriting a real draft with emptyForm
+  const skipFirstSave = useRef(true);
 
   // Restore draft on mount (create mode only)
   useEffect(() => {
@@ -185,21 +185,28 @@ export function AdminForm({ initial, suggestions, onSubmitted }: AdminFormProps)
       const saved = localStorage.getItem(DRAFT_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<ProjectInput>;
-        const hasContent = Object.entries(parsed).some(([, v]) =>
-          typeof v === "string" ? v.length > 0 : Array.isArray(v) ? v.length > 0 : false
-        );
+        // Only restore if the user changed at least one field that is empty by default
+        const hasContent = (Object.keys(emptyForm) as (keyof ProjectInput)[]).some((k) => {
+          const val = parsed[k];
+          const def = emptyForm[k];
+          if (Array.isArray(val) && Array.isArray(def)) return val.length !== def.length;
+          return val !== undefined && val !== def;
+        });
         if (hasContent) {
           setForm((prev) => ({ ...prev, ...parsed }));
           setHasDraft(true);
         }
       }
     } catch {}
-    draftRestored.current = true;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-save draft on every change (create mode only, after restore)
+  // Auto-save draft on every change (create mode only, skip initial render)
   useEffect(() => {
-    if (initial || !draftRestored.current) return;
+    if (initial) return;
+    if (skipFirstSave.current) {
+      skipFirstSave.current = false;
+      return;
+    }
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(form));
     } catch {}
