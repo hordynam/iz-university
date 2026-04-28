@@ -22,8 +22,15 @@ import {
   type AnalogCompany,
 } from "@/lib/types";
 
+interface Suggestions {
+  faculties: string[];
+  academicYears: string[];
+  educationalPrograms: string[];
+}
+
 interface AdminFormProps {
   initial?: Project;
+  suggestions?: Suggestions;
   onSubmitted: () => void;
 }
 
@@ -38,7 +45,7 @@ const emptyForm: ProjectInput = {
   group: "",
   academicYear: "",
   companyName: "",
-  projectTitle: "",
+  projectTitle: "поза темою кваліфікаційної роботи",
   description: "",
   pdfUrl: "",
   externalReportUrl: "",
@@ -63,7 +70,7 @@ function toFormState(p: Project): ProjectInput {
   };
 }
 
-export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
+export function AdminForm({ initial, suggestions, onSubmitted }: AdminFormProps) {
   const [form, setForm] = useState<ProjectInput>(
     initial ? toFormState(initial) : emptyForm
   );
@@ -258,10 +265,16 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
             </Label>
             <Input
               id="educationalProgram"
+              list="opp-list"
               value={form.educationalProgram}
               onChange={(e) => update("educationalProgram", e.target.value)}
               required
             />
+            <datalist id="opp-list">
+              {(suggestions?.educationalPrograms ?? []).map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
           </div>
 
           <div className="space-y-1.5">
@@ -287,10 +300,16 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
             <Label htmlFor="faculty">Факультет *</Label>
             <Input
               id="faculty"
+              list="faculty-list"
               value={form.faculty}
               onChange={(e) => update("faculty", e.target.value)}
               required
             />
+            <datalist id="faculty-list">
+              {(suggestions?.faculties ?? []).map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
           </div>
 
           <div className="space-y-1.5">
@@ -326,11 +345,17 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
             <Label htmlFor="academicYear">Навчальний рік *</Label>
             <Input
               id="academicYear"
+              list="year-list"
               placeholder="2024–2025"
               value={form.academicYear}
               onChange={(e) => update("academicYear", e.target.value)}
               required
             />
+            <datalist id="year-list">
+              {(suggestions?.academicYears ?? []).map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
           </div>
         </div>
       </section>

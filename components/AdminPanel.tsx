@@ -41,6 +41,12 @@ import type { Project } from "@/lib/types";
 export function AdminPanel() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[] | null>(null);
+
+  const suggestions = {
+    faculties: Array.from(new Set((projects ?? []).map((p) => p.faculty))).sort(),
+    academicYears: Array.from(new Set((projects ?? []).map((p) => p.academicYear))).sort((a, b) => b.localeCompare(a)),
+    educationalPrograms: Array.from(new Set((projects ?? []).map((p) => p.educationalProgram))).sort(),
+  };
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<Project | null>(null);
@@ -248,6 +254,7 @@ export function AdminPanel() {
             <SheetTitle>Додати новий проєкт</SheetTitle>
           </SheetHeader>
           <AdminForm
+            suggestions={suggestions}
             onSubmitted={() => {
               setCreateOpen(false);
               void load();
@@ -268,6 +275,7 @@ export function AdminPanel() {
           {editing && (
             <AdminForm
               initial={editing}
+              suggestions={suggestions}
               onSubmitted={() => {
                 setEditing(null);
                 void load();
