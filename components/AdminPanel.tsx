@@ -33,6 +33,8 @@ import {
   LogOut,
   Loader2,
   FolderOpen,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import type { Project } from "@/lib/types";
 
@@ -44,6 +46,7 @@ export function AdminPanel() {
   const [editing, setEditing] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState<Project | null>(null);
   const [deletingBusy, setDeletingBusy] = useState(false);
+  const [pinningId, setPinningId] = useState<string | null>(null);
 
   const load = async () => {
     setError(null);
@@ -60,6 +63,24 @@ export function AdminPanel() {
   useEffect(() => {
     void load();
   }, []);
+
+  const handlePin = async (project: Project) => {
+    setPinningId(project.id);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/pin`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pinned: !project.pinned }),
+      });
+      if (!res.ok) throw new Error("Не вдалося змінити закріплення");
+      await load();
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Помилка");
+    } finally {
+      setPinningId(null);
+    }
+  };
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
@@ -136,6 +157,7 @@ export function AdminPanel() {
                 <TableHead className="hidden md:table-cell">ОПП</TableHead>
                 <TableHead className="hidden lg:table-cell">Курс</TableHead>
                 <TableHead>Рейтинг</TableHead>
+                <TableHead className="hidden sm:table-cell">Закріплено</TableHead>
                 <TableHead className="text-right">Дії</TableHead>
               </TableRow>
             </TableHeader>
@@ -169,8 +191,32 @@ export function AdminPanel() {
                       <span className="text-sm text-muted-foreground">—</span>
                     )}
                   </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {p.pinned ? (
+                      <Badge variant="default" className="bg-brand-gold text-brand-navy border-0">
+                        Закріплено
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex gap-1">
+                      <Button
+                        size="sm"
+                        variant={p.pinned ? "default" : "outline"}
+                        onClick={() => handlePin(p)}
+                        disabled={pinningId === p.id}
+                        title={p.pinned ? "Відкріпити" : "Закріпити"}
+                      >
+                        {pinningId === p.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : p.pinned ? (
+                          <PinOff className="h-3.5 w-3.5" />
+                        ) : (
+                          <Pin className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"

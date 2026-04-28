@@ -71,6 +71,7 @@ export async function updateProject(
     updatedAt: new Date().toISOString(),
     ratingSum: existing.ratingSum ?? 0,
     ratingCount: existing.ratingCount ?? 0,
+    pinned: existing.pinned ?? false,
   };
 
   await kv.set(projectKey(id), updated);
@@ -112,6 +113,18 @@ export async function addVote(
   }
 
   return { sum, count };
+}
+
+export async function pinProject(
+  id: string,
+  pinned: boolean
+): Promise<Project | null> {
+  const existing = await getProjectById(id);
+  if (!existing) return null;
+
+  const updated: Project = { ...existing, pinned, updatedAt: new Date().toISOString() };
+  await kv.set(projectKey(id), updated);
+  return updated;
 }
 
 export async function deleteProject(id: string): Promise<Project | null> {

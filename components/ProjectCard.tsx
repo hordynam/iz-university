@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RATINGS } from "@/lib/rating";
-import { ArrowRight, Building2 } from "lucide-react";
+import { ArrowRight, Building2, Star } from "lucide-react";
 import type { Project } from "@/lib/types";
 
 interface ProjectCardProps {
@@ -28,9 +28,15 @@ function VotePreview({ sum, count }: { sum: number; count: number }) {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <Card className="flex flex-col h-full overflow-hidden border-border hover:border-brand-navy transition-all">
+    <Card className={`flex flex-col h-full overflow-hidden border-border hover:border-brand-navy transition-all${project.pinned ? " ring-1 ring-brand-gold" : ""}`}>
       <div className="h-1 bg-gradient-to-r from-brand-navy to-brand-gold" />
       <CardHeader className="pb-4">
+        {project.pinned && (
+          <div className="flex items-center gap-1 text-xs font-semibold text-brand-gold mb-2">
+            <Star className="h-3.5 w-3.5 fill-brand-gold" />
+            Кращий проєкт
+          </div>
+        )}
         <div className="flex items-start gap-2 text-brand-navy mb-2">
           <Building2 className="h-5 w-5 shrink-0 mt-1" />
           <h3 className="text-xl font-bold leading-tight">

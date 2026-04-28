@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { FilterBar, EMPTY_FILTERS, type FilterState } from "./FilterBar";
 import { ProjectCard } from "./ProjectCard";
-import { FolderOpen } from "lucide-react";
+import { FolderOpen, Star } from "lucide-react";
 import type { Project } from "@/lib/types";
 
 interface CatalogViewProps {
@@ -24,6 +24,11 @@ export function CatalogView({ projects }: CatalogViewProps) {
   }, [projects]);
 
   const handleChange = useCallback((f: FilterState) => setFilters(f), []);
+
+  const pinnedProjects = useMemo(
+    () => projects.filter((p) => p.pinned),
+    [projects]
+  );
 
   const filtered = useMemo(() => {
     return projects.filter((p) => {
@@ -53,6 +58,21 @@ export function CatalogView({ projects }: CatalogViewProps) {
 
   return (
     <div className="space-y-6">
+      {pinnedProjects.length > 0 && (
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Star className="h-5 w-5 fill-brand-gold text-brand-gold" />
+            <h2 className="text-lg font-semibold text-brand-navy">Кращі проєкти</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pinnedProjects.map((p) => (
+              <ProjectCard key={p.id} project={p} />
+            ))}
+          </div>
+          <div className="border-t border-border" />
+        </section>
+      )}
+
       <FilterBar
         faculties={faculties}
         academicYears={academicYears}

@@ -32,6 +32,8 @@ export interface Project {
 
   ratingSum: number;
   ratingCount: number;
+
+  pinned?: boolean;
 }
 
 export const analogCompanySchema = z.object({
