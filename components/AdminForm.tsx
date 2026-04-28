@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, useEffect, useRef, FormEvent, ChangeEvent } from "react";
 import { upload } from "@vercel/blob/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, CheckCircle2, Loader2 } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, Loader2, FileEdit } from "lucide-react";
 import {
   projectInputSchema,
   type ProjectInput,
@@ -26,6 +26,8 @@ interface AdminFormProps {
   initial?: Project;
   onSubmitted: () => void;
 }
+
+const DRAFT_KEY = "admin_new_project_draft";
 
 const emptyForm: ProjectInput = {
   studentName: "",
@@ -65,12 +67,50 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
   const [form, setForm] = useState<ProjectInput>(
     initial ? toFormState(initial) : emptyForm
   );
+  const [hasDraft, setHasDraft] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(
     initial?.pdfUrl ? true : false
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Track whether the draft has been restored yet (to avoid saving empty form over it)
+  const draftRestored = useRef(false);
+
+  // Restore draft on mount (create mode only)
+  useEffect(() => {
+    if (initial) return;
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<ProjectInput>;
+        const hasContent = Object.entries(parsed).some(([, v]) =>
+          typeof v === "string" ? v.length > 0 : Array.isArray(v) ? v.length > 0 : false
+        );
+        if (hasContent) {
+          setForm((prev) => ({ ...prev, ...parsed }));
+          setHasDraft(true);
+        }
+      }
+    } catch {}
+    draftRestored.current = true;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save draft on every change (create mode only, after restore)
+  useEffect(() => {
+    if (initial || !draftRestored.current) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(form));
+    } catch {}
+  }, [form, initial]);
+
+  const discardDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setForm(emptyForm);
+    setHasDraft(false);
+    setUploadSuccess(false);
+  };
 
   const update = <K extends keyof ProjectInput>(
     key: K,
@@ -167,6 +207,7 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Помилка збереження");
       }
+      if (!initial) localStorage.removeItem(DRAFT_KEY);
       onSubmitted();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Помилка");
@@ -177,6 +218,24 @@ export function AdminForm({ initial, onSubmitted }: AdminFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {hasDraft && (
+        <div className="flex items-center justify-between gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm">
+          <div className="flex items-center gap-2 text-amber-800">
+            <FileEdit className="h-4 w-4 shrink-0" />
+            <span>Відновлено чернетку — продовжте заповнення</span>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-amber-700 hover:text-amber-900 hover:bg-amber-100 h-7 px-2"
+            onClick={discardDraft}
+          >
+            Очистити
+          </Button>
+        </div>
+      )}
+
       <section className="space-y-4">
         <h3 className="font-semibold text-brand-navy border-b border-border pb-2">
           Інформація про здобувача
